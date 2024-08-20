@@ -6,7 +6,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "make release",
+            "command": "make",
             "dependsOn": "Clean",
             "problemMatcher": [
                 "$gcc"

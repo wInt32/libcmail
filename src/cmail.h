@@ -8,15 +8,19 @@ typedef struct cmail_sender cmail_sender;
 typedef struct cmail_email cmail_email;
 typedef struct cmail_credentials cmail_credentials;
 
+typedef enum cmail_auth_method {
+    cmail_OAUTH2
+} cmail_auth_method;
+
 cmail *cmail_init(void);
 
-bool cmail_credentials_load(char *filename, cmail_credentials **creds);
+cmail_credentials *cmail_credentials_create(cmail_auth_method auth_method, const char *auth_provider, ...);
 
-cmail_credentials *cmail_credentials_create(char *auth_method, ...);
+bool cmail_credentials_oauth2_needs_auth(cmail *c, cmail_credentials *creds);
 
-bool cmail_credentials_authorize(cmail *c, cmail_credentials *creds);
+bool cmail_credentials_oauth2_authorize(cmail *c, cmail_credentials *creds);
 
-void cmail_credentials_save(cmail_credentials *creds, char *filename);
+bool cmail_credentials_oauth2_refresh(cmail *c, cmail_credentials *creds);
 
 cmail_sender *cmail_sender_create(char *server_url, char *sender_address, cmail_credentials *creds);
 
@@ -25,5 +29,7 @@ cmail_email *cmail_email_new(void);
 void cmail_email_add_recipient(cmail_email *email, char *address);
 
 void cmail_email_add_header(cmail_email *email, char *header, char *value);
+
+bool cmail_sender_send_email(cmail *c, cmail_sender *sender, cmail_email *email);
 
 #endif

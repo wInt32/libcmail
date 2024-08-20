@@ -3,6 +3,10 @@
         "memory.h": "c",
         "features.h": "c",
         "stdbool.h": "c",
-        "cmail.h": "c"
+        "cmail.h": "c",
+        "unistd.h": "c",
+        "assert.h": "c",
+        "string.h": "c",
+        "socket.h": "c"
     },
 }

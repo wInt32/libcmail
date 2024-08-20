@@ -5,7 +5,7 @@ ifeq ($(target),win32)
 	PSUFFIX := -$(PLATFORM)
 	PDIR := $(PLATFORM)/
 	TPREFIX = x86_64-w64-mingw32
-	LDFLAGS += $$($(TPREFIX)-pkg-config libcurl --libs)
+	LDFLAGS += $$($(TPREFIX)-pkg-config libcurl --libs) -lws2_32
 	CC = $(TPREFIX)-cc
 	AR = $(TPREFIX)-ar
 else
@@ -16,23 +16,24 @@ endif
 EXAMPLES = $(wildcard examples/*.c)
 EXAMPLES_BIN = $(addprefix target/examples/$(PDIR),$(notdir $(basename $(EXAMPLES))))
 
-FINAL_CFLAGS := -fPIC -O3
+FINAL_CFLAGS := -fPIC
 FINAL_CFLAGS += $(CFLAGS)
 ifeq ($(debug),1)
 FINAL_CFLAGS += -g
+else
+FINAL_CFLAGS += -O3
 endif
 
 ALL = dirs .WAIT target/libcmail$(PSUFFIX).a target/cmail.h examples
 
 ifneq ($(wildcard .makecflags),)
-$(info .makecflags exists)
 	ifneq ($(shell cat .makecflags),$(FINAL_CFLAGS))
-$(info CFLAGS don't match, rebuilding...)
-	ALL := clean | $(ALL)
+	REBUILD = clean .WAIT
 	endif
 endif
+ALL := $(REBUILD) $(ALL)
 
-$(info building targets: $(ALL))
+$(shell echo $(FINAL_CFLAGS) > .makecflags)
 
 all: $(ALL)
 
@@ -60,15 +61,13 @@ $(EXAMPLES_BIN): $(EXAMPLES)
 .PHONY: clean
 .IGNORE: clean
 
-release: dirs target/release.zip target/sources.tar.gz
+release: $(REBUILD) dirs target/release.zip target/sources.tar.gz
 
 target/release$(PSUFFIX).zip: target/libcmail$(PSUFFIX).a target/cmail.h LICENSE README.md
 	zip -quj target/release$(PSUFFIX).zip $^
 
 target/sources.tar.gz: src/* external/* examples/* .gitignore LICENSE Makefile README.md
 	tar czf target/sources.tar.gz $^
-
-$(shell echo $(FINAL_CFLAGS) > .makecflags)
 
 clean:
 ifneq ($(wildcard build),)

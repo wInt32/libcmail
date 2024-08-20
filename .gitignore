@@ -1,3 +1,4 @@
 target
 build
 .makecflags
+examples/credentials.h
