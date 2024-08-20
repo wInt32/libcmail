@@ -11,9 +11,15 @@ struct cmail {
     CURL *curl;
 };
 
-struct cmail_sender {};
-struct cmail_email {};
 struct cmail_credentials {};
+
+struct cmail_sender {
+    char *server_url;
+    char *address;
+    cmail_credentials *creds;
+};
+
+struct cmail_email {};
 
 cmail *cmail_init() {
     cmail *c = calloc(1, sizeof(cmail));

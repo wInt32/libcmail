@@ -1,5 +1,3 @@
-ALL = dirs target/cmail.h
-
 LDFLAGS = -L target -l$(subst lib,,libcmail$(PSUFFIX))
 
 ifeq ($(target),win32)
@@ -18,21 +16,29 @@ endif
 EXAMPLES = $(wildcard examples/*.c)
 EXAMPLES_BIN = $(addprefix target/examples/$(PDIR),$(notdir $(basename $(EXAMPLES))))
 
-ALL += target/libcmail$(PSUFFIX).a
-ALL += examples
+FINAL_CFLAGS := -fPIC -O3
+FINAL_CFLAGS += $(CFLAGS)
+ifeq ($(debug),1)
+FINAL_CFLAGS += -g
+endif
+
+ALL = dirs .WAIT target/libcmail$(PSUFFIX).a target/cmail.h examples
+
+ifneq ($(wildcard .makecflags),)
+$(info .makecflags exists)
+	ifneq ($(shell cat .makecflags),$(FINAL_CFLAGS))
+$(info CFLAGS don't match, rebuilding...)
+	ALL := clean | $(ALL)
+	endif
+endif
+
+$(info building targets: $(ALL))
 
 all: $(ALL)
 
 dirs:
-ifeq ($(wildcard target/examples/$(PDIR).),)
-	mkdir -p target/examples/$(PDIR)
-endif
-ifeq ($(wildcard build/$(PDIR).),)
-	mkdir -p build/$(PDIR)
-endif
-
-FINAL_CFLAGS := -fPIC -O3
-FINAL_CFLAGS += $(CFLAGS)
+	@sh -c "test -d target/examples/$(PDIR) || mkdir -p target/examples/$(PDIR)"
+	@sh -c "test -d build/$(PDIR) || mkdir -p build/$(PDIR)"
 
 build/$(PDIR)cJSON.o: external/cJSON.c external/cJSON.h
 	$(CC) external/cJSON.c -o build/$(PDIR)cJSON.o -c $(FINAL_CFLAGS)
@@ -53,7 +59,6 @@ $(EXAMPLES_BIN): $(EXAMPLES)
 
 .PHONY: clean
 .IGNORE: clean
-.SUFFIXES: .c
 
 release: dirs target/release.zip target/sources.tar.gz
 
@@ -63,6 +68,17 @@ target/release$(PSUFFIX).zip: target/libcmail$(PSUFFIX).a target/cmail.h LICENSE
 target/sources.tar.gz: src/* external/* examples/* .gitignore LICENSE Makefile README.md
 	tar czf target/sources.tar.gz $^
 
+$(shell echo $(FINAL_CFLAGS) > .makecflags)
+
 clean:
+ifneq ($(wildcard build),)
 	rm build -vr
+endif
+ifneq ($(wildcard target),)
 	rm target -vr
+endif
+
+distclean: clean
+ifneq ($(wildcard .makecflags),)
+	rm .makecflags
+endif
