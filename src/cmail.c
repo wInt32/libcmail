@@ -163,6 +163,7 @@ bool listen_and_fetch_auth_code(cmail *c, cmail_credentials *creds) {
         authorization_code = NULL;
         goto cleanup;
     }
+    puts(authorization_code);
     send(client_fd, success_page, sizeof(success_page)-1, 0);
     creds->oauth2.authorization_code = authorization_code;
     return true;

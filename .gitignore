@@ -1,4 +1,4 @@
 target
 build
-.makecflags
-examples/credentials.h
+.makecfg
+examples/credentials.txt

@@ -7,7 +7,7 @@
 #include <cmail.h> // include <cmail.h>, link with libcmail.a and libcurl
 #endif
 
-#include "credentials.h"
+#include "credentials.txt"
 
 int main() {
 
